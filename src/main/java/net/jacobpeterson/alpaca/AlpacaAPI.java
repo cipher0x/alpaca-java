@@ -17,6 +17,7 @@ import net.jacobpeterson.alpaca.rest.endpoint.marketdata.stock.StockMarketDataEn
 import net.jacobpeterson.alpaca.rest.endpoint.orders.OrdersEndpoint;
 import net.jacobpeterson.alpaca.rest.endpoint.portfoliohistory.PortfolioHistoryEndpoint;
 import net.jacobpeterson.alpaca.rest.endpoint.positions.PositionsEndpoint;
+import net.jacobpeterson.alpaca.rest.endpoint.screener.MostActiveStocksEndpoint;
 import net.jacobpeterson.alpaca.rest.endpoint.watchlist.WatchlistEndpoint;
 import net.jacobpeterson.alpaca.websocket.AlpacaWebsocket;
 import net.jacobpeterson.alpaca.websocket.marketdata.MarketDataWebsocketInterface;
@@ -45,15 +46,20 @@ public class AlpacaAPI {
 
     private static final String VERSION_2_PATH_SEGMENT = "v2";
     private static final String VERSION_1_BETA_3_PATH_SEGMENT = "v1beta3";
+    private static final String VERSION_1_BETA_1_PATH_SEGMENT = "v1beta1";
 
     private final OkHttpClient okHttpClient;
     private final AlpacaClient brokerClient;
     private final AlpacaClient cryptoDataClient;
     private final AlpacaClient stockDataClient;
+    private final AlpacaClient screenerDataClient;
+
     // Ordering of fields/methods below are analogous to the ordering in the Alpaca documentation
     private final AccountEndpoint accountEndpoint;
     private final CryptoMarketDataEndpoint cryptoMarketDataEndpoint;
     private final StockMarketDataEndpoint stockMarketDataEndpoint;
+    private final MostActiveStocksEndpoint screenerDataEndpoint;
+
     private final OrdersEndpoint ordersEndpoint;
     private final PositionsEndpoint positionsEndpoint;
     private final AssetsEndpoint assetsEndpoint;
@@ -173,15 +179,19 @@ public class AlpacaAPI {
                     brokerHostSubdomain, VERSION_2_PATH_SEGMENT);
             cryptoDataClient = new AlpacaClient(okHttpClient, keyID, secretKey, "data", VERSION_1_BETA_3_PATH_SEGMENT);
             stockDataClient = new AlpacaClient(okHttpClient, keyID, secretKey, "data", VERSION_2_PATH_SEGMENT);
+            screenerDataClient = new AlpacaClient(okHttpClient, keyID, secretKey, "data", VERSION_1_BETA_1_PATH_SEGMENT);
+
         } else {
             brokerClient = new AlpacaClient(okHttpClient, oAuthToken, brokerHostSubdomain, VERSION_2_PATH_SEGMENT);
             cryptoDataClient = null;
             stockDataClient = null;
+            screenerDataClient = null;
         }
 
         accountEndpoint = new AccountEndpoint(brokerClient);
         cryptoMarketDataEndpoint = cryptoDataClient == null ? null : new CryptoMarketDataEndpoint(cryptoDataClient);
         stockMarketDataEndpoint = stockDataClient == null ? null : new StockMarketDataEndpoint(stockDataClient);
+        screenerDataEndpoint = screenerDataClient == null ? null : new MostActiveStocksEndpoint(screenerDataClient);
         ordersEndpoint = new OrdersEndpoint(brokerClient);
         positionsEndpoint = new PositionsEndpoint(brokerClient);
         assetsEndpoint = new AssetsEndpoint(brokerClient);
@@ -304,6 +314,7 @@ public class AlpacaAPI {
         return stockMarketDataWebsocket;
     }
 
+    public MostActiveStocksEndpoint mostActiveStocksEndpoint() {return screenerDataEndpoint;}
     public OkHttpClient getOkHttpClient() {
         return okHttpClient;
     }
